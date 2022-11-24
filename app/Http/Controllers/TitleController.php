@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\OMDB;
-use App\Models\Title;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use App\Facades\OMDB;
+use App\Models\Title;
+use App\Http\Requests\OMDBTitlesRequest;
 
 class TitleController extends Controller
 {
-    public function index(Request $request) {
+    public function index(OMDBTitlesRequest $request) {
         
         $page = $request->page ?? 1;
 
@@ -41,6 +43,8 @@ class TitleController extends Controller
                 ];
             }
 
+            DB::beginTransaction();
+
             $titleModel = Title::updateOrCreate([
                 'imdb_id' => $item['imdb_id'],
             ],
@@ -58,6 +62,8 @@ class TitleController extends Controller
             }
 
             $titles->push($item);
+
+            DB::commit();
         }
 
         Cache::add($request['title'] . '-' . $page, $titles, 1000);

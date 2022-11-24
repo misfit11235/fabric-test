@@ -12,12 +12,19 @@ class OMDBRequestTest extends TestCase
      *
      * @return void
      */
-    public function test_omdb_titles_request()
-    {   
+    public function test_omdb_titles_request_has_results()
+    {
         $titles = ['Matrix', 'Matrix Reloaded', 'Matrix Revolution'];
         foreach($titles as $title) {
             $response = OMDB::search($title);
-            $this->assertArrayHasKey('Search', $response);
-        }   
+            $this->assertTrue(count($response['Search']) > 0);
+        }
     }
+
+    public function test_omdb_titles_request_no_results()
+    {
+        $response = OMDB::search(352532532);
+        $this->assertTrue($response['Response'] === 'False');
+    }
+
 }
