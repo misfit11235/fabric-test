@@ -63,7 +63,7 @@ const scrollToTop = () => {
         <button class="px-4 py-2 bg-red-400 rounded-full font-bold m-4" @click="getTitle('Matrix Revolutions')">MATRIX REVOLUTIONS</button>
       </div>
       <div class="flex flex-wrap justify-center items-center px-4 m-2">
-        <div v-for="(title, index) in titles" :key="index" class="px-2 w-full md:w-1/2 lg:w-1/4 xl:w-1/5 my-8">
+        <div v-for="(title, index) in titles" :key="index" class="px-2 w-full md:w-1/2 lg:w-1/3 xl:w-1/4 my-8">
           <p class="text-center italic"><span class="">{{ index + 1 }}. {{ title.title }}</span> ({{ title.year }})</p>
           <p class="text-center  text-sm opacity-50 mb-2"> - {{ title.type }} - </p>
           <div class="h-96 w-64 bg-cover bg-center mx-auto" :style="getTitlePoster(title)" :title="`Poster for ${title.title}(${title.year})`"></div>

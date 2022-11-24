@@ -12,6 +12,10 @@ class OMDB
 			throw new \Exception('OMDB API key not set.');
 		}
 
+		if(!env('OMDB_BASE_URL')) {
+			throw new \Exception('OMDB API base url not set.');
+		}
+
 		$response = Http::get(env('OMDB_BASE_URL'), [
 			's' => $title,
 			'apikey' => env('OMDB_API_KEY'),
