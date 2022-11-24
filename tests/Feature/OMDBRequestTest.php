@@ -26,5 +26,4 @@ class OMDBRequestTest extends TestCase
         $response = OMDB::search(352532532);
         $this->assertTrue($response['Response'] === 'False');
     }
-
 }
