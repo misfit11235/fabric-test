@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ApiTitleTest extends TestCase
@@ -27,7 +25,7 @@ class ApiTitleTest extends TestCase
 
     public function test_api_title_with_bad_params()
     {
-        $response = $this->get('/api/title?title=Matrix&page=999');
+        $response = $this->get('/api/title?title=xyzxyz&page=999');
         $response->assertStatus(500);
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Facades\OMDB;
@@ -27,6 +26,17 @@ class TitleController extends Controller
             ]);
         }
 
+        //TODO store searched terms and cached page number/total pages per term
+        // if($titles = Title::where('title', 'LIKE', '%' . $request['title'] . '%')->with('poster')->get()->toArray()) {
+        //     $pages = ceil(count($titles) / 10);
+        //     $titles = array_chunk($titles, 10);
+            
+        //     return response()->json([
+        //         'titles' => $titles[$page - 1],
+        //         'pages' => $pages
+        //     ]);
+        // };
+
         $response = OMDB::search($request['title'], $page);
         
         foreach($response['Search'] as $title) {
@@ -43,27 +53,34 @@ class TitleController extends Controller
                 ];
             }
 
-            DB::beginTransaction();
+            try {
+                DB::beginTransaction();
 
-            $titleModel = Title::updateOrCreate([
-                'imdb_id' => $item['imdb_id'],
-            ],
-            [
-                'title' => $item['title'],
-                'year' => $item['year'],
-                'type' => $item['type'],
-            ]);
-
-            if(isset($item['poster']['url']) && $item['poster']['url'] !== 'N/A' && !($titleModel->poster()->count())) {
-                $titleModel->poster()->create([
-                    'url' => $item['poster']['url'],
-                    'title_id' => $titleModel->id
+                $titleModel = Title::updateOrCreate([
+                    'imdb_id' => $item['imdb_id'],
+                ],
+                [
+                    'title' => $item['title'],
+                    'year' => $item['year'],
+                    'type' => $item['type'],
                 ]);
+    
+                if(isset($item['poster']['url']) && $item['poster']['url'] !== 'N/A' && !($titleModel->poster()->count())) {
+                    $titleModel->poster()->create([
+                        'url' => $item['poster']['url'],
+                        'title_id' => $titleModel->id
+                    ]);
+                }
+    
+                $titles->push($item);
+
+                DB::commit();
+
             }
-
-            $titles->push($item);
-
-            DB::commit();
+            catch(\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
         }
 
         Cache::add($request['title'] . '-' . $page, $titles, 1000);
