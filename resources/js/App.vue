@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+import { useToast } from "vue-toastification";
 
+const toast = useToast();
 let titles = ref(null);
 let currentPage = ref(1);
 let pages = ref(0);
@@ -17,6 +19,14 @@ const getTitle = (title) => {
   .then(response => {
     titles.value = response.data.titles;
     pages.value = response.data.pages;
+  })
+  .catch(error => {
+    if (error.response.data) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('Error fetching titles.')
+    }
+    console.log(error)
   });
 }
 
@@ -31,6 +41,14 @@ const getNextPage = () => {
   .then(response => {
     titles.value = titles.value.concat(response.data.titles);
   })
+  .catch(error => {
+    if (error.response.data) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('Error fetching more titles.')
+    }
+    console.log(error)
+  });
 }
 
 const getTitlePoster = (title) => {
