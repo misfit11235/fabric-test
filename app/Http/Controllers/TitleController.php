@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use App\Facades\OMDB;
 use App\Models\Title;
+use App\Models\SearchedTerm;
 use App\Http\Requests\OMDBTitlesRequest;
 
 class TitleController extends Controller
@@ -13,9 +14,8 @@ class TitleController extends Controller
     public function index(OMDBTitlesRequest $request) {
         
         $page = $request->page ?? 1;
-
-        $titles = collect();
-
+        
+        //try fetching titles from cache
         if(Cache::has($request['title'] . '-' . $page)) {
             $titles = Cache::get($request['title'] . '-' . $page);
             $pages = Cache::get($request['title'] . '-pages');
@@ -26,19 +26,32 @@ class TitleController extends Controller
             ]);
         }
 
-        //TODO store searched terms and cached page number/total pages per term
-        // if($titles = Title::where('title', 'LIKE', '%' . $request['title'] . '%')->with('poster')->get()->toArray()) {
-        //     $pages = ceil(count($titles) / 10);
-        //     $titles = array_chunk($titles, 10);
+        //check if title has already been searched and to what extent(furthest page saved)
+        $searched = SearchedTerm::where('term', $request['title'])->first();
+        $titles = Title::where('title', 'LIKE', '%' . $request['title'] . '%')->with('poster')->skip($page * 10)->take(10)->get()->toArray();
+        //try fetching titles from DB if saved
+        if($searched && count($titles) && $searched['last_cached_page'] >= $page) {
+            $pages = $searched['total_pages'];
             
-        //     return response()->json([
-        //         'titles' => $titles[$page - 1],
-        //         'pages' => $pages
-        //     ]);
-        // };
+            Cache::add($request['title'] . '-' . $page, $titles);
+            Cache::add($request['title'] . '-pages', $pages);
 
+            return response()->json([
+                'titles' => $titles,
+                'pages' => $pages
+            ]);
+        };
+
+        //fetch titles from OMDB API, store&cache them
         $response = OMDB::search($request['title'], $page);
-        
+        SearchedTerm::updateOrCreate([
+            'term' => $request['title']
+        ],
+        [
+            'total_pages' => ceil($response['totalResults'] / 10),
+            'last_cached_page' => $page
+        ]);
+
         foreach($response['Search'] as $title) {
             $item = [
                 'title' => $title['Title'],
@@ -71,8 +84,8 @@ class TitleController extends Controller
                         'title_id' => $titleModel->id
                     ]);
                 }
-    
-                $titles->push($item);
+                
+                array_push($titles, $item);
 
                 DB::commit();
 

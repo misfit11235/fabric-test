@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Title;
 
 return new class extends Migration
 {
@@ -14,10 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('posters', function (Blueprint $table) {
+        Schema::create('searched_terms', function (Blueprint $table) {
             $table->id();
-            $table->string('url');
-            $table->foreignIdFor(Title::class);
+            $table->string('term');
+            $table->unsignedInteger('total_pages');
+            $table->unsignedInteger('last_cached_page');
         });
     }
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('posters');
+        Schema::dropIfExists('searched_terms');
     }
 };

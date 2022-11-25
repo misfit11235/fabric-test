@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('imdb_id');
             $table->string('type');
             $table->index('imdb_id');
-            // $table->timestamps();
         });
     }
 
