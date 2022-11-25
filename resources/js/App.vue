@@ -70,7 +70,7 @@ const scrollToTop = () => {
   <div id="top" class="">
     <div class="flex flex-col justify-center items-center font-bold text-6xl bg-gradient-to-b from-red-400 to-blue-400 p-4">
       <p class="text-center">Open Movie Database Browser</p>
-      <p class="text-xl mb-2">(as of Q4 2022 only for Matrix aficionados)</p>
+      <p class="text-xl mb-2 text-center">(as of Q4 2022 only for Matrix aficionados)</p>
     </div>
     <div class="my-8 pb-2">
       <div class="flex justify-center">
