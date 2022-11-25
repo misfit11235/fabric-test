@@ -28,16 +28,20 @@ class TitleController extends Controller
 
         //check if title has already been searched and to what extent(furthest page saved)
         $searched = SearchedTerm::where('term', $request['title'])->first();
-        $titles = Title::where('title', 'LIKE', '%' . $request['title'] . '%')->with('poster')->skip($page * 10)->take(10)->get()->toArray();
+        // $titles = Title::where('title', 'LIKE', '%' . $request['title'] . '%')->with('poster')->skip($page * 10)->take(10)->get()->toArray();
+        $titles = Title::where('title', 'LIKE', '%' . $request['title'] . '%')->with('poster')->get()->toArray();
+        
         //try fetching titles from DB if saved
         if($searched && count($titles) && $searched['last_cached_page'] >= $page) {
-            $pages = $searched['total_pages'];
             
-            Cache::add($request['title'] . '-' . $page, $titles);
+            $pages = $searched['total_pages']; 
+            $titles = array_chunk($titles, 10);
+            
+            Cache::add($request['title'] . '-' . $page, $titles[$page - 1]);
             Cache::add($request['title'] . '-pages', $pages);
 
             return response()->json([
-                'titles' => $titles,
+                'titles' => $titles[$page - 1],
                 'pages' => $pages
             ]);
         };
